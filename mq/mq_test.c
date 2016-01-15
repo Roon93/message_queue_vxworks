@@ -68,9 +68,10 @@ void* showReveiver(void* args) {
     return NULL;
 }
 
-void* test_callback(void* args) {
+void test_callback(long arg0, long arg1, long arg2, long arg3, long arg4, \
+        long arg5, long arg6, long arg7, long arg8, long arg9) {
     ContentPtr content;
-    printf("########abc %d\n", args);
+    printf("########abc %d\n", arg0);
     if (args != NULL) {
         printf("args: %d\n", args);
         content = (ContentPtr)args;

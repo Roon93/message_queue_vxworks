@@ -8,7 +8,9 @@ void test_sleep(MSecond ms) {
     timer_loginfo("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
 }
 
-void *timeout_callback(void* arg) {
+/* @TODO for vxworks*/
+void timeout_callback(long arg0, long arg1, long arg2, long arg3, \
+        long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
     timer_loginfo("i am the timeout callback");
     return NULL;
 }
@@ -21,7 +23,8 @@ void test_clear_timeout(TimerID id) {
     myClearTimeout(id);
 }
 
-void *interval_callback(void* arg) {
+void interval_callback(long arg0, long arg1, long arg2, long arg3, \
+        long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
     printf("interval_callback: test");
     static int count = 0;
     count ++;

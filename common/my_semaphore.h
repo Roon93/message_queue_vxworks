@@ -1,9 +1,8 @@
-#include <semaphore.h>
 #include "common_log.h"
 
 /* @TODO need according to sys sem*/
-typedef sem_t* MySemaphorePtr;
-typedef sem_t  MySemaphore;
+typedef SEM_ID MySemaphorePtr;
+/* typedef SEM_ID MySemaphore;*/
 
 MySemaphorePtr initSemaphore();
 

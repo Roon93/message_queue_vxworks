@@ -2,7 +2,6 @@
 
 /* Timer switcher*/
 static unsigned char g_timer_switcher = 1;
-static TaskID g_engine_task_id;
 
 void lockGlobalInfo() {
     waitSemaphore(g_timer_chain_sem);
@@ -14,7 +13,8 @@ void unlockGlobalInfo() {
     postSemaphore(g_timer_callback_info_sem);
 }
 
-void* startTimer(void* args) {
+void startTimer(long arg0, long arg1, long arg2, long arg3, long arg4, \
+        long arg5, long arg6, long arg7, long arg7, long arg8, long arg9) {
     int count = 0;
     timer_debug("startTimer: start to forwarding the timer");
     while (g_timer_switcher) {
@@ -32,7 +32,7 @@ void initTimer() {
     /* @TODO start the timer task and forward timer*/
     initCallbackInfo();
     g_timer_switcher = 1;
-    createTask(&g_engine_task_id, &startTimer, NULL);
+    createTask(&startTimer, NULL);
 }
 
 void deinitTimer() {

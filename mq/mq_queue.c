@@ -60,7 +60,7 @@ void processReceiverMessage(MessagePtr msg, ReceiverPtr receiver, int flag) {
         postSemaphore(receiver->sem);
     } else {
         mq_debug("processReceiverMessage: callback %d", receiver->callback);
-        createTask(&tmp_task, receiver->callback, (void*)msg->content);
+        createTask(receiver->callback, (void*)msg->content);
     }
     msg->content = NULL;
     if (flag == 0) {

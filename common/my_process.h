@@ -2,11 +2,12 @@
 #include "common_log.h"
 
 /* @TODO need according to sys task*/
-typedef pthread_t  TaskID;
-typedef pthread_t* TaskIDPtr;
-typedef void* (*TaskCallback) (void*);
+typedef int TaskID;
+typedef int* TaskIDPtr;
+typedef void (*TaskCallback) (long, long, long, long, long, long, long, long, \
+        long, long);
 
-int createTask(TaskIDPtr task_id_ptr, TaskCallback callback, void* args);
+int createTask(TaskCallback callback, void* args);
 
 void joinTask(TaskID task_id);
 

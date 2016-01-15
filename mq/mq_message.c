@@ -86,8 +86,9 @@ int matchMessageReceiver(MessagePtr msg, ReceiverPtr receiver) {
 }
 
 /* @TODO for vxworks*/
-void *messageTimeoutCallback(void* args) {
-    MessagePtr msg = (MessagePtr)args;
+void messageTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
+        long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
+    MessagePtr msg = (MessagePtr)arg0;
     mq_debug("messageTimeoutCallback: desc %s, tid %d", msg->desc, msg->tid);
     msg->tid = -1;
     destroyMessage(msg, 1);

@@ -1,7 +1,4 @@
 #include "my_semaphore.h"
-#include <fcntl.h>           /* For O_* constants */
-#include <sys/stat.h>        /* For mode constants */
-#include <semaphore.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -21,24 +18,22 @@ char* getRadomName() {
 }
 
 MySemaphorePtr initSemaphore() {
-    char* a = getRadomName();
-    common_debug("initSemaphore: %s", a);
-    MySemaphorePtr tmp = sem_open(a, O_CREAT, S_IRUSR|S_IWUSR, 1);
+    MySemaphorePtr tmp = semBCreate(SEM_Q_FIFO, SEM_EMPTY);
     return tmp;
 }
 
 void waitSemaphore(MySemaphorePtr sem) {
     common_debug("waitSemaphore: %d", sem);
-    sem_wait(sem);  
+    semTake(sem, WAIT_FOREVER);
 }
 
 void destroySemaphore(MySemaphorePtr sem) {
     common_debug("destroySemaphore: %d", sem);
-    sem_close(sem);
+    semDelete(sem);
 }
 
 void postSemaphore(MySemaphorePtr sem) {
     common_debug("postSemaphore: %d", sem);
-    sem_post(sem);
+    semGive(sem);
 }
 

@@ -55,8 +55,9 @@ void destroyReceiver(ReceiverPtr receiver, int detach_queue) {
 }
 
 /* @TODO for vxworks*/
-void *receiverTimeoutCallback(void* args) {
-    ReceiverPtr ptr = (ReceiverPtr)args;
+void receiverTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
+        long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
+    ReceiverPtr ptr = (ReceiverPtr)arg0;
     mq_debug("receiverTimeoutCallback: desc %s, tid %d", ptr->desc, ptr->tid);
     if (ptr->type == MQ_SUSPEND_RECEIVER && ptr->sem != NULL) {
         *(ptr->contentPtr) = NULL;
