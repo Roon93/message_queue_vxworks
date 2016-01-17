@@ -1,8 +1,11 @@
 #include "timer_basic.h"
 #include "timer_callback.h"
 
-void lockGlobalInfo();
-void unlockGlobalInfo();
+void initTimerGlobalLock();
+
+void lockTimerGlobalInfo();
+
+void unlockTimerGlobalInfo();
 
 void initTimer();
 
@@ -23,4 +26,5 @@ TimerNodePtr splitTimerNode(TimerNodePtr cur, int tick_num);
 
 void removeTimerNode(TimerNodePtr ptr);
 
-void decreaseTimerNode();
+void decreaseTimerNode(long arg0, long arg1, long arg2, long arg3, long arg4, \
+                long arg5, long arg6, long arg7, long arg8, long arg9);

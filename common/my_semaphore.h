@@ -1,3 +1,4 @@
+#include "semLib.h"
 #include "common_log.h"
 
 /* @TODO need according to sys sem*/

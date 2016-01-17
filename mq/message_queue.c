@@ -4,31 +4,41 @@ MessagePtr g_mq_message_queue = NULL;
 ReceiverPtr g_mq_receiver_queue = NULL;
 
 void showMessageQueue() {
-    MessagePtr msg = g_mq_message_queue;
+    MessagePtr msg;
+    lockMqGlobalInfo();
+    msg = g_mq_message_queue;
     printf("the current Message queue\n");
     while (msg != NULL) {
         printf("----%s----\n", msg->desc);
         msg = msg->next;
     }
+    unlockMqGlobalInfo();
 }
 
 void showReceiverQueue() {
-    ReceiverPtr ptr = g_mq_receiver_queue;
+    ReceiverPtr ptr;
+    lockMqGlobalInfo();
+    ptr = g_mq_receiver_queue;
     printf("the current Receiver queue\n");
     while (ptr != NULL) {
         printf("****%s****\n", ptr->desc);
         ptr = ptr->next;
     }
+    unlockMqGlobalInfo();
 }
 
 void initMQ(int log_level_mq, int log_level_timer, int log_lever_memory) {
     mq_loginfo("begin init mq");
     set_mq_log_level(log_level_mq);
+
     myTimerInit(log_level_timer, log_lever_memory);
     mq_loginfo("success init mq");
+
+    initMqGlobalInfoLock();
 }
 
 void deinitMQ() {
+    lockMqGlobalInfo();
     mq_loginfo("begin deinit mq");
     mq_loginfo("begin deinit message queue");
     while (g_mq_message_queue != NULL) {
@@ -40,7 +50,8 @@ void deinitMQ() {
     }
     mq_loginfo("begin deinit timeout");
     myTimerDeinit();
-    mq_loginfo("succuss init mq");
+    mq_loginfo("succuss deinit mq");
+    unlockMqGlobalInfo();
 }
 
 void MQAddNormalMessage(TaskIDPtr id, MessageInfo description, void* data, \

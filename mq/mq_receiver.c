@@ -64,6 +64,7 @@ void receiverTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
         postSemaphore(ptr->sem);
     }
     ptr->tid = -1;
+    waitSemaphore(g_mq_receiver_sem);
     destroyReceiver(ptr, 1);
-    return NULL;
+    postSemaphore(g_mq_receiver_sem);
 }

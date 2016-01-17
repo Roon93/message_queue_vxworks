@@ -1,9 +1,32 @@
 #include "mq_queue.h"
 
+MySemaphorePtr g_mq_message_sem = NULL;
+MySemaphorePtr g_mq_receiver_sem = NULL;
+
+void initMqGlobalInfoLock() {
+    g_mq_message_sem = initSemaphore();
+    postSemaphore(g_mq_message_sem);
+
+    g_mq_receiver_sem = initSemaphore();
+    postSemaphore(g_mq_receiver_sem);
+}
+
+void lockMqGlobalInfo() {
+    waitSemaphore(g_mq_message_sem);
+    waitSemaphore(g_mq_receiver_sem);
+}
+
+void unlockMqGlobalInfo() {
+    postSemaphore(g_mq_message_sem);
+    postSemaphore(g_mq_receiver_sem);
+}
+
 void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         MessageInfo description, ContentPtr content) {
     MessagePtr msg = createMessage(type, sender, ttl, description, content);
-    ReceiverPtr receiver = g_mq_receiver_queue;
+    ReceiverPtr receiver;
+    lockMqGlobalInfo();
+    receiver = g_mq_receiver_queue;
     mq_debug("addMessage: type %d, ttl %d, description %s", type, ttl, \
             description);
     mq_debug("addMessage: content data %s, length %d", (char*)content->data, \
@@ -12,6 +35,7 @@ void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         if (matchMessageReceiver(msg, receiver) == 1) {
             mq_debug("addMessage: matched a receiver");
             processReceiverMessage(msg, receiver, 0);
+            unlockMqGlobalInfo();
             return;
         }
         receiver = receiver->next;
@@ -21,6 +45,7 @@ void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         mq_debug("addMessage: add a timeout message");
         msg->tid = mySetTimeout(msg->ttl, messageTimeoutCallback, (void*)msg);
     }
+    unlockMqGlobalInfo();
 }
 
 void addReceiver(TaskIDPtr id, MessageInfo desc, MSecond ttl, \
@@ -28,12 +53,15 @@ void addReceiver(TaskIDPtr id, MessageInfo desc, MSecond ttl, \
         ContentPtrPtr contentPtr) {
     ReceiverPtr receiver = createReceiver(id, desc, ttl, type, sem, callback, \
             contentPtr);
-    MessagePtr msg = g_mq_message_queue;
+    MessagePtr msg;
+    lockMqGlobalInfo();
+    msg = g_mq_message_queue;
     mq_debug("addReceiver: desc %s, ttl %d, type %d, contentPtr %d", desc, ttl,\
             type, contentPtr);
     while (msg != NULL) {
         if (matchMessageReceiver(msg, receiver) == 1) {
             processReceiverMessage(msg, receiver, 1);
+            unlockMqGlobalInfo();
             return;
         }
         msg = msg->next;
@@ -44,6 +72,7 @@ void addReceiver(TaskIDPtr id, MessageInfo desc, MSecond ttl, \
         receiver->tid = mySetTimeout(receiver->ttl, receiverTimeoutCallback, \
                 (void*)receiver);
     }
+    unlockMqGlobalInfo();
 }
 
 void processReceiverMessage(MessagePtr msg, ReceiverPtr receiver, int flag) {

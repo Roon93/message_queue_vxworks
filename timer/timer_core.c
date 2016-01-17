@@ -2,37 +2,49 @@
 
 /* Timer switcher*/
 static unsigned char g_timer_switcher = 1;
+MySemaphorePtr g_timer_tick_sem;
 
-void lockGlobalInfo() {
+MySemaphorePtr g_timer_chain_sem;
+MySemaphorePtr g_timer_callback_info_sem;
+
+void initTimerGlobalLock() {
+    g_timer_chain_sem = initSemaphore();
+    postSemaphore(g_timer_chain_sem);
+    g_timer_callback_info_sem = initSemaphore();
+    postSemaphore(g_timer_callback_info_sem);
+}
+
+void lockTimerGlobalInfo() {
     waitSemaphore(g_timer_chain_sem);
     waitSemaphore(g_timer_callback_info_sem);
 }
 
-void unlockGlobalInfo() {
+void unlockTimerGlobalInfo() {
     postSemaphore(g_timer_chain_sem);
     postSemaphore(g_timer_callback_info_sem);
 }
 
-void startTimer(long arg0, long arg1, long arg2, long arg3, long arg4, \
-        long arg5, long arg6, long arg7, long arg7, long arg8, long arg9) {
-    int count = 0;
-    timer_debug("startTimer: start to forwarding the timer");
-    while (g_timer_switcher) {
-        usleep(1 * 1000);
-        count ++;
-        if (count == TICK) {
-            decreaseTimerNode();
-            count = 0;
-        }
+void increaseTick(long arg) {
+    static int count = 0;
+    /* timer_debug("startTimer: start to forwarding the timer cout: %d", count); */
+    count ++;
+    if (count == 3) {
+        postSemaphore(g_timer_tick_sem);
+        count = 0;
     }
-    return NULL;
 }
 
 void initTimer() {
     /* @TODO start the timer task and forward timer*/
+    initTimerGlobalLock();
     initCallbackInfo();
     g_timer_switcher = 1;
-    createTask(&startTimer, NULL);
+    sysClkConnect(increaseTick, 0);
+    sysClkRateSet(1000 / TICK);
+    sysClkEnable();
+    timer_debug("initTimer: getrate %d", sysClkRateGet());
+    g_timer_tick_sem = initSemaphore();
+    createTask(decreaseTimerNode, 0);
 }
 
 void deinitTimer() {
@@ -40,6 +52,8 @@ void deinitTimer() {
     TimerItemPtr tmp_item;
     timer_debug("deinitTimer: ");
     g_timer_switcher = 0;
+    sysClkDisable();
+    destroySemaphore(g_timer_tick_sem);
     while (g_timer_chain != NULL) {
         tmp_node = g_timer_chain;
         g_timer_chain = tmp_node->next;
@@ -56,7 +70,6 @@ TimerID insertTimerItem(int tick_num, TimerItemType type, MySemaphorePtr sem, \
 
     timer_debug("insertTimerItem: tick_num %d, type %d, sem %d, tid %d", \
             tick_num, type, sem, tid);
-
     new_timer_item = (TimerItemPtr)my_malloc(sizeof(TimerItem));
     timer_debug("insertTimerNode: after alloc memory");
     new_timer_item->type = type;
@@ -104,8 +117,7 @@ void activateTimerItem(TimerItemPtr ptr) {
         timer_debug("activateTimerItem: callback %d, args %d", ptr->callback, \
                 ptr->args);
         /* @TODO call the function */
-        int abc = createTask(&task_id, ptr->callback, ptr->args);
-        timer_debug("activateTimerItem: abc %d", abc);
+        createTask(ptr->callback, ptr->args);
         if (ptr->type == TIMER_INTERVAL) {
             timer_debug("activateTimerItem: the TIMER_INTERVAL");
             insertTimerItem(ptr->interval, ptr->type, NULL, ptr->callback, \
@@ -191,26 +203,33 @@ void removeTimerNode(TimerNodePtr ptr) {
     my_free(ptr);
 }
 
-void decreaseTimerNode() {
-    TimerNodePtr tmp_node = g_timer_chain;
+void decreaseTimerNode(long arg0, long arg1, long arg2, long arg3, long arg4, \
+        long arg5, long arg6, long arg7, long arg8, long arg9) {
+    TimerNodePtr tmp_node;
     TimerItemPtr tmp_item;
-    if (g_timer_chain == NULL) {
-        timer_debug("decreaseTimerNode: g_timer_chain is empty");
-        return;
-    }
-    timer_debug("decreaseTimerNode: before tick_num %d", tmp_node->tick_number);
-    tmp_node->tick_number --;
-    if (tmp_node->tick_number == 0) {
-        timer_debug("decreaseTimerNode: activate timers");
-        while (tmp_node->item_head != NULL) {
-            tmp_item = tmp_node->item_head;
-            tmp_node->item_head = tmp_item->next;
-            activateTimerItem(tmp_item);
-            my_free(tmp_item);
+    while (g_timer_switcher) {
+        waitSemaphore(g_timer_tick_sem);
+        lockTimerGlobalInfo();
+        if (g_timer_chain == NULL) {
+            timer_debug("decreaseTimerNode: g_timer_chain is empty");
+            return;
         }
-        timer_debug("decreaseTimerNode: after activate");
-        g_timer_chain = tmp_node->next;
-        my_free(tmp_node);
+        tmp_node = g_timer_chain;
+        timer_debug("decreaseTimerNode: before tick_num %d", tmp_node->tick_number);
+        tmp_node->tick_number --;
+        if (tmp_node->tick_number == 0) {
+            timer_debug("decreaseTimerNode: activate timers");
+            while (tmp_node->item_head != NULL) {
+                tmp_item = tmp_node->item_head;
+                tmp_node->item_head = tmp_item->next;
+                activateTimerItem(tmp_item);
+                my_free(tmp_item);
+            }
+            timer_debug("decreaseTimerNode: after activate");
+            g_timer_chain = tmp_node->next;
+            my_free(tmp_node);
+        }
+        timer_debug("decreaseTimerNode: end of");
+        unlockTimerGlobalInfo();
     }
-    timer_debug("decreaseTimerNode: end of");
 }

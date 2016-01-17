@@ -60,4 +60,6 @@ typedef struct Receiver {
 extern MessagePtr g_mq_message_queue;   /* the global message queue*/
 extern ReceiverPtr g_mq_receiver_queue; /* the global receiver queue*/
 
+extern MySemaphorePtr g_mq_message_sem; /* the semaphore for the message queue*/
+extern MySemaphorePtr g_mq_receiver_sem; /* the semaphre for receiver queue*/
 #endif

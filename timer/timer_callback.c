@@ -5,11 +5,12 @@ CallbackInfoPtr g_timer_callback_info = NULL;
 
 void initCallbackInfo() {
     CallbackFreeNodePtr tmp;
+    int i;
     if (g_timer_callback_info == NULL) {
         timer_debug("initCallbackInfo: empty callback info");
         g_timer_callback_info = (CallbackInfoPtr)my_malloc(sizeof(CallbackInfo));
         g_timer_callback_info->free_node_head = NULL;
-        for (int i = 0; i < MAX_CALLBACK_NUM; i ++) {
+        for (i = 0; i < MAX_CALLBACK_NUM; i ++) {
             tmp = (CallbackFreeNodePtr)my_malloc(sizeof(CallbackFreeNode));
             tmp->tid = (TimerID)i;
             tmp->next = g_timer_callback_info->free_node_head;

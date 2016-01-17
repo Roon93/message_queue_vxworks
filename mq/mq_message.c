@@ -57,8 +57,8 @@ void destroyMessage(MessagePtr msg, int detach_queue) {
 
 int compareMessageDescription(MessageInfo msg_desc, MessageInfo other_desc) {
     int i = 0;
-    mq_debug("compareMessageDescription: msg_desc %s, other_desc %s", msg_desc,\
-            other_desc);
+    mq_debug("compareMessageDescription: msg_desc %s", msg_desc);
+    mq_debug("compareMessageDescription: other_desc %s", other_desc);
     if (msg_desc != NULL) {
         if (other_desc == NULL) {
             return 0;
@@ -91,6 +91,7 @@ void messageTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
     MessagePtr msg = (MessagePtr)arg0;
     mq_debug("messageTimeoutCallback: desc %s, tid %d", msg->desc, msg->tid);
     msg->tid = -1;
+    waitSemaphore(g_mq_message_sem);
     destroyMessage(msg, 1);
-    return NULL;
+    postSemaphore(g_mq_message_sem);
 }

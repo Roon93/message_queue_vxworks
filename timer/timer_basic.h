@@ -7,8 +7,8 @@
 #include "../common/common.h"
 
 /* @TODO */
-#define TICK 1000     /* per tick interval*/
-#define MAX_CALLBACK_NUM 100    /* Maximum callback timer number*/
+#define TICK 20 /* per tick interval*/
+#define MAX_CALLBACK_NUM 50 /* Maximum callback timer number*/
 
 typedef long long int MSecond;  /* type time */
 typedef int TimerID;            /* the callback timer identify*/

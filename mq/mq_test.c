@@ -18,9 +18,10 @@ void test_add_timeout_message(char* desc, char* data, int length, int ms) {
 }
 
 void test_add_imm_receiver(char* desc) {
+    ContentPtrPtr contentPtr;
     printf("--------------------------im receiver--------------------------\n");
     printf("test add immediately receiver: desc %s\n", desc);
-    ContentPtrPtr contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
+    contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
     *contentPtr = NULL;
     MQAddImmediatelyReceiver(NULL, desc, contentPtr);
     printf("test add immediately receiver success\n");
@@ -32,9 +33,10 @@ void test_add_imm_receiver(char* desc) {
 }
 
 void test_add_suspend_receiver(char* desc, MSecond ms) {
+    ContentPtrPtr contentPtr;
     printf("---------------------------suspend receiver--------------------\n");
     printf("test add suspend receiver: desc %s, ms %lld\n", desc, ms);
-    ContentPtrPtr contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
+    contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
     *contentPtr = NULL;
     printf("Suspend before back\n");
     MQAddSuspendReceiver(NULL, desc, ms, contentPtr);
@@ -72,28 +74,26 @@ void test_callback(long arg0, long arg1, long arg2, long arg3, long arg4, \
         long arg5, long arg6, long arg7, long arg8, long arg9) {
     ContentPtr content;
     printf("########abc %d\n", arg0);
-    if (args != NULL) {
-        printf("args: %d\n", args);
-        content = (ContentPtr)args;
+    if (arg0 != 0) {
+        printf("args: %d\n", arg0);
+        content = (ContentPtr)arg0;
         printf("the data %s, length %d\n", content->data, content->length);
     }
     printf("#######I am the callbakc fuction######\n");
     return NULL;
 }
 
-int main(int argc, char* argv[]) {
-    int log_level_mq = argc >= 2? atoi(argv[1]): 0;
-    int log_level_timer = argc >= 3? atoi(argv[2]): 0;
-    int log_lever_memory = argc >= 4? atoi(argv[3]): 0;
-
+int mqTest(int log_level_mq, int log_level_timer, int log_level_memory) {
+    int showMessageTid;
+    int showReveiverTid;
+    int i;
     printf("---------------------------Test--------------------------------\n");
     printf("Begin MQ TEST, LOG LEVLEL %d, %d, %d\n", log_level_mq, \
-            log_level_timer, log_lever_memory);
-    initMQ(log_level_mq, log_level_timer, log_lever_memory);
+            log_level_timer, log_level_memory);
+    initMQ(log_level_mq, log_level_timer, log_level_memory);
 
-    int showMessageTid = mySetInterval(2000, showMessage, NULL);
-    int showReveiverTid = mySetInterval(2000, showReveiver, NULL);
-    
+    showMessageTid = mySetInterval(1000, showMessage, NULL);
+    showReveiverTid = mySetInterval(1000, showReveiver, NULL);
 
     test_add_normal_message("aaa", "abcd", 5);
     test_add_normal_message("aaa", "abcd", 5);
@@ -104,36 +104,35 @@ int main(int argc, char* argv[]) {
 
     test_add_timeout_message("bbb", "bbbbb", 6, 3000);
     test_add_timeout_message("bbb", "bbbbb", 6, 3000);
-    for (int i = 0; i < 20; i ++) {
+    for (i = 0; i < 20; i ++) {
         test_add_timeout_message("bbb", "bbbbb", 6, 3000);
-        mySleep(500);
+        mySleep(100);
     }
-   sleep(1);
-   test_add_imm_receiver("bbb");
-   test_add_suspend_receiver("ccc", 3000);
-   sleep(1);
-   test_add_normal_message("ccc", "ccccc", 6);
-   test_add_normal_message("ccc", "ccccc", 6);
-   printf("&&&&&&&&&&&&&&&&&&&&&&&\n");
-   showMessage(NULL);
-   
-   test_add_callback_receiver("ddd", 4000, test_callback);
-   sleep(2);
-   test_add_normal_message("ddd", "ddddd", 6);
-   test_add_normal_message("ddd", "ddddd", 6);
-   sleep(2);
+    mySleep(100);
+    test_add_imm_receiver("bbb");
+    test_add_suspend_receiver("ccc", 3000);
+    mySleep(100);
+    test_add_normal_message("ccc", "ccccc", 6);
+    test_add_normal_message("ccc", "ccccc", 6);
+    printf("&&&&&&&&&&&&&&&&&&&&&&&\n");
 
-   test_add_callback_receiver("ddd", 4000, test_callback);
-   sleep(1);
-   test_add_callback_receiver("ddd", 4000, test_callback);
-   sleep(1);
-   test_add_callback_receiver("ddd", 4000, test_callback);
-   sleep(1);
-   test_add_callback_receiver("ddd", 4000, test_callback);
-   sleep(2);
-   test_add_callback_receiver("ddd", 4000, test_callback);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+    mySleep(200);
+    test_add_normal_message("ddd", "ddddd", 6);
+    test_add_normal_message("ddd", "ddddd", 6);
+    mySleep(200);
 
-    sleep(10);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+    mySleep(100);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+    mySleep(100);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+    mySleep(100);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+    mySleep(200);
+    test_add_callback_receiver("ddd", 4000, test_callback);
+
+    mySleep(1000);
     myClearInterval(showMessageTid);
     myClearInterval(showReveiverTid);
     deinitMQ();

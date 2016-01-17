@@ -1,4 +1,4 @@
-#include <pthread.h>
+#include "taskLib.h"
 #include "common_log.h"
 
 /* @TODO need according to sys task*/

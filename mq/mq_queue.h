@@ -2,6 +2,12 @@
 #include "mq_message.h"
 #include "mq_receiver.h"
 
+void initMqGlobalInfoLock();
+
+void lockMqGlobalInfo();
+
+void unlockMqGlobalInfo();
+
 void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         MessageInfo description, ContentPtr content);
 
