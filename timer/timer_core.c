@@ -4,24 +4,23 @@
 static unsigned char g_timer_switcher = 1;
 MySemaphorePtr g_timer_tick_sem;
 
-MySemaphorePtr g_timer_chain_sem;
-MySemaphorePtr g_timer_callback_info_sem;
+MySemaphorePtr g_timer_global_info_sem;
 
 void initTimerGlobalLock() {
-    g_timer_chain_sem = initSemaphore();
-    postSemaphore(g_timer_chain_sem);
-    g_timer_callback_info_sem = initSemaphore();
-    postSemaphore(g_timer_callback_info_sem);
+    g_timer_global_info_sem = initSemaphore();
+    postSemaphore(g_timer_global_info_sem);
 }
 
 void lockTimerGlobalInfo() {
-    waitSemaphore(g_timer_chain_sem);
-    waitSemaphore(g_timer_callback_info_sem);
+    waitSemaphore(g_timer_global_info_sem);
 }
 
 void unlockTimerGlobalInfo() {
-    postSemaphore(g_timer_chain_sem);
-    postSemaphore(g_timer_callback_info_sem);
+    postSemaphore(g_timer_global_info_sem);
+}
+
+void destroyTimerGlobalInfo() {
+    destroySemaphore(g_timer_global_info_sem);
 }
 
 void increaseTick(long arg) {
@@ -36,15 +35,14 @@ void increaseTick(long arg) {
 
 void initTimer() {
     /* @TODO start the timer task and forward timer*/
-    initTimerGlobalLock();
     initCallbackInfo();
     g_timer_switcher = 1;
+    g_timer_tick_sem = initSemaphore();
+    createTask(decreaseTimerNode, 0);
     sysClkConnect(increaseTick, 0);
     sysClkRateSet(1000 / TICK);
     sysClkEnable();
     timer_debug("initTimer: getrate %d", sysClkRateGet());
-    g_timer_tick_sem = initSemaphore();
-    createTask(decreaseTimerNode, 0);
 }
 
 void deinitTimer() {
@@ -59,6 +57,7 @@ void deinitTimer() {
         g_timer_chain = tmp_node->next;
         removeTimerNode(tmp_node);
     }
+    g_timer_chain = NULL;
     deinitCallbackInfo();
     timer_loginfo("deinit g_timer_chain success");
 }
@@ -77,6 +76,14 @@ TimerID insertTimerItem(int tick_num, TimerItemType type, MySemaphorePtr sem, \
     new_timer_item->interval = tick_num;
     new_timer_item->callback = callback;
     new_timer_item->args = args;
+    if (type != TIMER_SEM) { 
+        timer_debug("inserttimernode: not sem");
+        tid = addCallbackItem(new_timer_item, tid);
+        if (tid == -1) {
+            my_free(new_timer_item);
+            return -1;
+        }
+    }
     new_timer_item->pre = timer_node->item_head;
     new_timer_item->next = timer_node->item_head->next;
     timer_debug("insertTimerNode: after asign");
@@ -85,10 +92,6 @@ TimerID insertTimerItem(int tick_num, TimerItemType type, MySemaphorePtr sem, \
     }
     timer_node->item_head->next = new_timer_item;
     timer_debug("insertTimerNode: after asign item_head");
-    if (type != TIMER_SEM) { 
-        timer_debug("insertTimerNode: not sem");
-        tid = addCallbackItem(new_timer_item, tid);
-    }
     timer_debug("insertTimerItem: end of the function, tid %d", tid);
     new_timer_item->tid = tid;
     return tid;

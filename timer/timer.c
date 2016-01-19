@@ -2,9 +2,9 @@
 
 
 /* Before call the timer you must invoke this function*/
-void myTimerInit(int log_level_timer, int log_level_memory) {
-    init_memory_manage(log_level_memory);
+void myTimerInit(int log_level_timer) {
     set_timer_log_level(log_level_timer);
+    initTimerGlobalLock();
     initTimer();
     timer_loginfo("init success");
 }
@@ -14,7 +14,7 @@ void myTimerDeinit() {
     unlockTimerGlobalInfo();
     deinitTimer();
     unlockTimerGlobalInfo();
-    deinit_memory_manage();
+    destroyTimerGlobalInfo();
     timer_loginfo("init deinit success");
 }
 
@@ -68,9 +68,6 @@ TimerID mySetInterval(MSecond ms, TaskCallback callback, void* args) {
 void myClearInterval(TimerID tid) {
     timer_debug("myClearInterval: tid %d, %d", tid, g_timer_callback_info);
     lockTimerGlobalInfo();
-    if (g_timer_callback_info == NULL) {
-        timer_debug("myClearInterval: null");
-    }
     if (g_timer_callback_info->items[tid] != NULL) {
         timer_debug("myClearTimeout: valid clear");
         removeTimerItem(g_timer_callback_info->items[tid]);

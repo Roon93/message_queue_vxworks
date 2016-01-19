@@ -30,6 +30,7 @@ void deinitCallbackInfo() {
         my_free(tmp);
     }
     my_free(g_timer_callback_info);
+    g_timer_callback_info = NULL;
     timer_loginfo("deinit callback info successful");
 }
 
@@ -48,6 +49,9 @@ TimerID addCallbackItem(TimerItemPtr timer_item, TimerID tid) {
         return tid;
     } else {
         timer_debug("addCallbackItem: tid is -1 %d", tid);
+        if (g_timer_callback_info == NULL) {
+            timer_debug("addCallbackItem: the g_timer_callback_info is NULL");
+        }
         if (g_timer_callback_info->free_node_head == NULL) {
             return -1;
         }
@@ -55,6 +59,7 @@ TimerID addCallbackItem(TimerItemPtr timer_item, TimerID tid) {
         g_timer_callback_info->free_node_head = free_node->next;
         new_tid = free_node->tid;
         my_free(free_node);
+        timer_debug("addCallbackItem: new_tid %d", new_tid);
         g_timer_callback_info->items[new_tid] = timer_item;
         timer_debug("addCallbackItem: new_tid %d", new_tid);
         return new_tid;
@@ -65,9 +70,14 @@ void removeCallbackItem(TimerID tid) {
     CallbackFreeNodePtr tmp;
 
     timer_debug("removeCallbackItem: tid %d", tid);
-
+    /* if remove the empty node*/
+    if (g_timer_callback_info->items[tid] == NULL || tid < 0 || \
+            tid > MAX_CALLBACK_NUM) {
+        return;
+    }
     tmp = (CallbackFreeNodePtr)my_malloc(sizeof(CallbackFreeNode));
     tmp->next = g_timer_callback_info->free_node_head;
+    tmp->tid = tid;
     g_timer_callback_info->free_node_head = tmp;
     g_timer_callback_info->items[tid] = NULL;
 }

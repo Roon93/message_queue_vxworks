@@ -7,6 +7,8 @@ void lockTimerGlobalInfo();
 
 void unlockTimerGlobalInfo();
 
+void destroyTimerGlobalInfo();
+
 void initTimer();
 
 void deinitTimer();

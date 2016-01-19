@@ -1,8 +1,11 @@
 #include "memory_manage.h"
 
+memory_info_ptr g_memory_info = NULL;
+
 int init_memory_manage(int log_level) {
     int i = 0;
     set_memory_log_level(log_level);
+    initMemoryGlobalInfoLock();
     memory_loginfo("Begin initialization.");
     g_memory_info = (memory_info_ptr)malloc(sizeof(memory_info));
     if (g_memory_info != NULL) {
@@ -30,6 +33,7 @@ void deinit_memory_manage() {
     int i;
     /* free chunks*/
     memory_loginfo("free chunks");
+    lockMemoryGlobalInfo();
     while (g_memory_info->chunk_list) {
         tmp_chunk = g_memory_info->chunk_list;
         g_memory_info->chunk_list = tmp_chunk->next;
@@ -49,7 +53,11 @@ void deinit_memory_manage() {
             free(tmp_block);
         }
     }
+    free(g_memory_info);
+    g_memory_info = NULL;
     memory_loginfo("deinit successed");
+    unlockMemoryGlobalInfo();
+    destroyMemoryGlobalInfoLock();
 }
 
 void* my_malloc(int size) {
@@ -68,6 +76,7 @@ int my_free(void* ptr) {
 
 void showStatus() {
     int i = 0;
+    lockMemoryGlobalInfo();
     printf("<------------------------------------------------------------>\n");
     printf("Total chunks: %d\n", g_memory_info->chunk_total);
     printf("Total blocks: %d\n", g_memory_info->total_blocks);
@@ -80,4 +89,5 @@ void showStatus() {
         printf("total blocks num: %d\n", g_memory_info->total_category_blocks[i]);
     }
     printf("^____________________________________________________________>\n\n");
+    unlockMemoryGlobalInfo();
 }

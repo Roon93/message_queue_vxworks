@@ -55,7 +55,6 @@ static TimerNodePtr g_timer_chain = NULL;
 /* related the callback info*/
 extern CallbackInfoPtr g_timer_callback_info;
 
-extern MySemaphorePtr g_timer_chain_sem;
-extern MySemaphorePtr g_timer_callback_info_sem;
+extern MySemaphorePtr g_timer_global_info_sem;
 
 #endif

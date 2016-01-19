@@ -8,7 +8,7 @@ void showMessageQueue();
 void showReceiverQueue();
 
 /* Initialize the MQ, include the timer and memory manage*/
-void initMQ(int log_level_mq, int log_level_timer, int log_lever_memory);
+void initMQ(int log_level_mq);
 
 /* Deinitialize the MQ, include the the timer, memory manage, the message*/
 /* Queue and the receiver queue*/

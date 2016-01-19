@@ -1,5 +1,24 @@
 #include "memory.h"
 
+MySemaphorePtr g_memory_global_sem = NULL;
+
+void initMemoryGlobalInfoLock() {
+    g_memory_global_sem = initSemaphore();
+    postSemaphore(g_memory_global_sem);
+}
+
+void lockMemoryGlobalInfo() {
+    waitSemaphore(g_memory_global_sem);
+}
+
+void unlockMemoryGlobalInfo() {
+    postSemaphore(g_memory_global_sem);
+}
+
+void destroyMemoryGlobalInfoLock() {
+    destroySemaphore(g_memory_global_sem);
+}
+
 int getBlockSizeFromCategory(memo_category category) {
     int size = 1;
     while (category > 0) {
@@ -22,9 +41,11 @@ memo_category getCategoryFromSize(int size) {
 
 void appendNewChunkToChunkChain(memory_info_ptr info, char* addr, int size, \
         memo_category category) {
+    /* initialize a chunk struct*/
     chunk_ptr new_chunk = (chunk_ptr)malloc(sizeof(chunk));
     new_chunk->addr = addr;
     new_chunk->size = size;
+    /* append the chunk struct to the chunck list*/
     new_chunk->next = info->chunk_list;
     info->chunk_list = new_chunk;
     info->chunk_total ++;
@@ -42,6 +63,7 @@ void appendNewChunkToFreeBlockChain(memory_info_ptr info, char* addr, int num, \
     info->free_block_num[category] += num;
     memory_debug("appendNewChunkToFreeBlockChain: category %d, num %d", category, num);
     while (num > 0) {
+        /* initialize a block*/
         new_block = (block_ptr)malloc(sizeof(block));
         new_block->ptr = (void *)addr;
         /* append the new block to the correspond free block chain*/
@@ -54,12 +76,14 @@ void appendNewChunkToFreeBlockChain(memory_info_ptr info, char* addr, int num, \
 
 void appendNewChunkToBST(memory_info_ptr info, char* addr, int size, \
         memo_category category) {
+    /* initialize a bst node*/
     bst_node_ptr new_node = (bst_node_ptr)malloc(sizeof(bst_node));
     new_node->start = (addr_type)addr;
     new_node->end = (addr_type)(addr + size);
     new_node->category = category;
     new_node->left = NULL;
     new_node->right = NULL;
+    /* append the bst node to the bst*/
     addNodeToBST(&info->category_map_BST, new_node);
     memory_debug("appendNewChunkToBST: category %d, size %d", category, size);
 }
@@ -92,8 +116,11 @@ void* getMemory(memory_info_ptr info, int size) {
     block_ptr tmp_block;
     memo_category category;
 
-    if (size <= 0) 
+    lockMemoryGlobalInfo();
+    if (size <= 0) {
+        unlockMemoryGlobalInfo();
         return NULL;
+    }
 
     memory_debug("getMemory: category %d, size %d", category, size);
     category = getCategoryFromSize(size);
@@ -104,6 +131,7 @@ void* getMemory(memory_info_ptr info, int size) {
 
         if (addChunk(info, category, INC_BLOCK_NUM) != 0) {
             memory_loginfo("getMemory failed");
+            unlockMemoryGlobalInfo();
             return NULL;
         }
     }
@@ -116,30 +144,38 @@ void* getMemory(memory_info_ptr info, int size) {
     info->free_block_num[category] --;
     free(tmp_block);
 
+    unlockMemoryGlobalInfo();
     return ptr;
 }
 
 int freeMemory(memory_info_ptr info, void* ptr) {
     addr_type base;
-    memo_category category = findCategoryInBST(info->category_map_BST, ptr, \
-            &base);
-    block_ptr new_block = (block_ptr)malloc(sizeof(block));
-    int block_size = getBlockSizeFromCategory(category);
+    memo_category category;
+    block_ptr new_block;
+    int block_size;
 
+    lockMemoryGlobalInfo();
+    /* get the category of the memory need to be freed*/
+    category = findCategoryInBST(info->category_map_BST, ptr, &base);
     memory_debug("freeMemory: category %d", category);
 
+    /* verify the memory address whether aligned*/
+    block_size = getBlockSizeFromCategory(category);
     if ((int)(ptr - base) % block_size != 0) {
         memory_error("freeMemory: free error addr %lld is not aglined", ptr);
+        unlockMemoryGlobalInfo();
         return 1;
     }
-
+    
+    /* create a new free block*/
+    new_block = (block_ptr)malloc(sizeof(block));
     new_block->ptr = ptr;
     /* append the free block the to correspond free block chain*/
     new_block->next = info->free_block_chains[category];
     info->free_block_chains[category] = new_block;
-    memory_debug("total free block num: %d", info->free_block_total);
+
     info->free_block_total ++;
-    memory_debug("total free block num: %d", info->free_block_total);
     info->free_block_num[category] ++;
+    unlockMemoryGlobalInfo();
     return 0;
 }

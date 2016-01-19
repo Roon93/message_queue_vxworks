@@ -27,11 +27,10 @@ void showReceiverQueue() {
     unlockMqGlobalInfo();
 }
 
-void initMQ(int log_level_mq, int log_level_timer, int log_lever_memory) {
+void initMQ(int log_level_mq) {
     mq_loginfo("begin init mq");
     set_mq_log_level(log_level_mq);
 
-    myTimerInit(log_level_timer, log_lever_memory);
     mq_loginfo("success init mq");
 
     initMqGlobalInfoLock();
@@ -48,10 +47,9 @@ void deinitMQ() {
     while (g_mq_receiver_queue != NULL) {
         destroyReceiver(g_mq_receiver_queue, 1);
     }
-    mq_loginfo("begin deinit timeout");
-    myTimerDeinit();
     mq_loginfo("succuss deinit mq");
     unlockMqGlobalInfo();
+    deinitMqGlobalInfoLock();
 }
 
 void MQAddNormalMessage(TaskIDPtr id, MessageInfo description, void* data, \

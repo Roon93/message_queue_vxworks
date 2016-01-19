@@ -5,6 +5,7 @@
 #include "../timer/timer.h"
 #include "../common/common.h"
 #include "mq_log.h"
+#include "mq_log.h"
 
 typedef enum {
     /* message will be kept in the queue if there is no receiver which match it*/
@@ -60,6 +61,5 @@ typedef struct Receiver {
 extern MessagePtr g_mq_message_queue;   /* the global message queue*/
 extern ReceiverPtr g_mq_receiver_queue; /* the global receiver queue*/
 
-extern MySemaphorePtr g_mq_message_sem; /* the semaphore for the message queue*/
-extern MySemaphorePtr g_mq_receiver_sem; /* the semaphre for receiver queue*/
+extern MySemaphorePtr g_mq_global_info_sem; /* the semaphore for mq global*/
 #endif

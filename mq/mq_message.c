@@ -91,7 +91,7 @@ void messageTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
     MessagePtr msg = (MessagePtr)arg0;
     mq_debug("messageTimeoutCallback: desc %s, tid %d", msg->desc, msg->tid);
     msg->tid = -1;
-    waitSemaphore(g_mq_message_sem);
+    lockMqGlobalInfo();
     destroyMessage(msg, 1);
-    postSemaphore(g_mq_message_sem);
+    unlockMqGlobalInfo();
 }

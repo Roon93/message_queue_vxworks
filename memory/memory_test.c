@@ -1,6 +1,5 @@
 #include "memory_test.h"
 
-
 void test_case_same_category() {
     int* ptr[15];
     int i;
@@ -73,6 +72,24 @@ void test_case_free_error() {
     printf("########################################\n\n");
 }
 
+void task1(long arg0, long agr1, long arg2, long arg3, long arg4, long arg5, \
+        long arg6, long arg7, long arg8, long arg9) {
+    /* add test_case*/
+    test_case_same_category();
+    test_case_different_category();
+    test_case_alloc_error();
+    test_case_free_error();
+}
+
+void task2(long arg0, long agr1, long arg2, long arg3, long arg4, long arg5, \
+        long arg6, long arg7, long arg8, long arg9) {
+    /* add test_case*/
+    test_case_same_category();
+    test_case_different_category();
+    test_case_alloc_error();
+    test_case_free_error();
+}
+
 int memoryTest(level) {
     init_memory_manage(level);
 
@@ -83,7 +100,19 @@ int memoryTest(level) {
     test_case_free_error();
 
     /* deinitialization*/
+    taskDelay(3);
     deinit_memory_manage();
     return 0;
 }
 
+
+int memoryMultTaskTest(level) {
+    init_memory_manage(level);
+
+    createTask(task1, NULL);
+    createTask(task2, NULL);
+    /* deinitialization*/
+    taskDelay(3);
+    deinit_memory_manage();
+    return 0;
+}

@@ -1,6 +1,6 @@
 #include "common_log.h"
 
-#define COMMON_LOG_LEVEL  3
+#define COMMON_LOG_LEVEL 3
 
 void common_loginfo(char* fmt, ...) {
     va_list args;

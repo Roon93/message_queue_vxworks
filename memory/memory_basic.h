@@ -1,4 +1,7 @@
+#ifndef MEMORY_BASIC
+#define MEMORY_BASIC
 #include "memory_log.h"
+#include "../common/common.h"
 
 /* category num equels the num of memo_category minus 1*/
 #define CATEGORY_NUM 12     
@@ -70,3 +73,7 @@ typedef struct memory_info {
     /* the total block of specify category*/
     int total_category_blocks[CATEGORY_NUM];
 }memory_info, * memory_info_ptr;
+
+extern MySemaphorePtr g_memory_global_sem;
+extern memory_info_ptr g_memory_info;
+#endif

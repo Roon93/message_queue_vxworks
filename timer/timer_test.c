@@ -43,7 +43,8 @@ int timerTest(int log_level_timer, int log_level_memory) {
     int i = 0; 
     TimerID tmp_id;
     TimerID id[40];
-    myTimerInit(log_level_timer, log_level_memory);
+    init_memory_manage(log_level_memory);
+    myTimerInit(log_level_timer);
     /* test_sleep(2000);*/
     for (i = 0; i < 30; i ++) {
         tmp_id = test_timeout(1000);
@@ -63,5 +64,6 @@ int timerTest(int log_level_timer, int log_level_memory) {
     }
     mySleep(4000);
     myTimerDeinit();
+    deinit_memory_manage();
     return 0;
 }

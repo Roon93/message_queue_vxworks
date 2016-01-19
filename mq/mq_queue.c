@@ -1,26 +1,5 @@
 #include "mq_queue.h"
 
-MySemaphorePtr g_mq_message_sem = NULL;
-MySemaphorePtr g_mq_receiver_sem = NULL;
-
-void initMqGlobalInfoLock() {
-    g_mq_message_sem = initSemaphore();
-    postSemaphore(g_mq_message_sem);
-
-    g_mq_receiver_sem = initSemaphore();
-    postSemaphore(g_mq_receiver_sem);
-}
-
-void lockMqGlobalInfo() {
-    waitSemaphore(g_mq_message_sem);
-    waitSemaphore(g_mq_receiver_sem);
-}
-
-void unlockMqGlobalInfo() {
-    postSemaphore(g_mq_message_sem);
-    postSemaphore(g_mq_receiver_sem);
-}
-
 void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         MessageInfo description, ContentPtr content) {
     MessagePtr msg = createMessage(type, sender, ttl, description, content);
@@ -40,11 +19,16 @@ void addMessage(MessageType type, TaskIDPtr sender, MSecond ttl, \
         }
         receiver = receiver->next;
     }
-    insertMessage(msg);
     if (msg->type == MQ_TIMEOUT_MESSAGE) {
         mq_debug("addMessage: add a timeout message");
         msg->tid = mySetTimeout(msg->ttl, messageTimeoutCallback, (void*)msg);
+        if (msg->tid == -1) {
+            my_free(msg);
+            unlockMqGlobalInfo();
+            return;
+        }
     }
+    insertMessage(msg);
     unlockMqGlobalInfo();
 }
 
@@ -67,10 +51,14 @@ void addReceiver(TaskIDPtr id, MessageInfo desc, MSecond ttl, \
         msg = msg->next;
     }
     if (receiver->type != MQ_IMMEDIATELY_RECEIVER) {
-        insertReceiver(receiver);
         mq_debug("addReceiver: add a %d type receiver", type);
         receiver->tid = mySetTimeout(receiver->ttl, receiverTimeoutCallback, \
                 (void*)receiver);
+        if (receiver->tid == -1) {
+            my_free(receiver);
+        } else {
+            insertReceiver(receiver);
+        }
     }
     unlockMqGlobalInfo();
 }

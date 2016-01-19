@@ -90,7 +90,9 @@ int mqTest(int log_level_mq, int log_level_timer, int log_level_memory) {
     printf("---------------------------Test--------------------------------\n");
     printf("Begin MQ TEST, LOG LEVLEL %d, %d, %d\n", log_level_mq, \
             log_level_timer, log_level_memory);
-    initMQ(log_level_mq, log_level_timer, log_level_memory);
+    init_memory_manage(log_level_memory);
+    myTimerInit(log_level_timer);
+    initMQ(log_level_mq);
 
     showMessageTid = mySetInterval(1000, showMessage, NULL);
     showReveiverTid = mySetInterval(1000, showReveiver, NULL);
@@ -136,5 +138,8 @@ int mqTest(int log_level_mq, int log_level_timer, int log_level_memory) {
     myClearInterval(showMessageTid);
     myClearInterval(showReveiverTid);
     deinitMQ();
+    myTimerDeinit();
+    deinit_memory_manage();
     printf("###############################################################\n");
+    return 0;
 }

@@ -1,14 +1,20 @@
-#ifndef BASIC_STRUCT
-#define BASIC_STRUCT
-
 #include "memory_basic.h"
-
-#endif
-
 #include "bst.h"
 #include "memory_log.h"
 
 #include <stdlib.h>
+
+/* init memory global information lock*/
+void initMemoryGlobalInfoLock();
+
+/* lock memory global information*/
+void lockMemoryGlobalInfo();
+
+/* unlock memory global information*/
+void unlockMemoryGlobalInfo();
+
+/* destroy memory global information lock*/
+void destroyMemoryGlobalInfoLock();
 
 /**
  * according to the block category get the block size
