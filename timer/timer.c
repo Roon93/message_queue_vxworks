@@ -68,6 +68,7 @@ TimerID mySetInterval(MSecond ms, TaskCallback callback, void* args) {
 void myClearInterval(TimerID tid) {
     timer_debug("myClearInterval: tid %d, %d", tid, g_timer_callback_info);
     lockTimerGlobalInfo();
+    /* remove all callback information*/
     if (g_timer_callback_info->items[tid] != NULL) {
         timer_debug("myClearTimeout: valid clear");
         removeTimerItem(g_timer_callback_info->items[tid]);

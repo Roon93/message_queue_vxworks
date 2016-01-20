@@ -8,7 +8,6 @@ void test_sleep(MSecond ms) {
     timer_loginfo("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
 }
 
-/* @TODO for vxworks*/
 void timeout_callback(long arg0, long arg1, long arg2, long arg3, \
         long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
     timer_loginfo("i am the timeout callback");

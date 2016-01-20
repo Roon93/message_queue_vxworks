@@ -57,8 +57,10 @@ void MQAddNormalMessage(TaskIDPtr id, MessageInfo description, void* data, \
     ContentPtr content = (ContentPtr)my_malloc(sizeof(Content));
     mq_debug("MQAddNormalMessage: description %s, data %s, data_length %d", \
             description, (char*)data, data_length);
+    /* make the data unit*/
     content->length = data_length;
     content->data = data;
+
     addMessage(MQ_NORMAL_MESSAGE, id, 0, description, content);
 }
 
@@ -67,8 +69,10 @@ void MQAddTimeoutMessage(TaskIDPtr id, MessageInfo description, void* data, \
     ContentPtr content = (ContentPtr)my_malloc(sizeof(Content));
     mq_debug("MQAddTimeoutMessage: ttl %d, desc %s, data %s, data_length %d", \
             ttl, description, (char*)data, data_length);
+    /*make a data unit*/
     content->length = data_length;
     content->data = data;
+
     addMessage(MQ_TIMEOUT_MESSAGE, id, ttl, description, content);
 }
 
@@ -86,9 +90,7 @@ void MQAddSuspendReceiver(TaskIDPtr id, MessageInfo description, MSecond ttl, \
     mq_debug("MQAddSuspendReceiver: description %s, ttl %d", description, ttl);
     addReceiver(id, description, ttl, MQ_SUSPEND_RECEIVER, sem, NULL, \
             contentPtr);
-    mq_debug("MQAddSuspendReceiver: before semaphore back");
     waitSemaphore(sem);
-    mq_debug("MQAddSuspendReceiver: after semaphore back");
     destroySemaphore(sem);
 }
 

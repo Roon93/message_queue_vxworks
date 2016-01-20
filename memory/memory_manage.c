@@ -8,6 +8,7 @@ int init_memory_manage(int log_level) {
     initMemoryGlobalInfoLock();
     memory_loginfo("Begin initialization.");
     g_memory_info = (memory_info_ptr)malloc(sizeof(memory_info));
+    /* initialize related info*/
     if (g_memory_info != NULL) {
         g_memory_info->chunk_list = NULL;
         g_memory_info->chunk_total = 0;

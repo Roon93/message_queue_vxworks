@@ -2,6 +2,7 @@
 
 MessagePtr createMessage(MessageType type, TaskIDPtr sender, MSecond ttl,\
        MessageInfo description, ContentPtr content) {
+    /* initialize a message*/
     MessagePtr new_message = (MessagePtr)my_malloc(sizeof(Message));
     new_message->type = type;
     new_message->sender = sender;
@@ -19,6 +20,7 @@ MessagePtr createMessage(MessageType type, TaskIDPtr sender, MSecond ttl,\
 
 void insertMessage(MessagePtr msg) {
     mq_debug("insertMessage: desc %s", msg->desc);
+    /* insert a message into the head of the message queue*/
     if (g_mq_message_queue != NULL) {
         msg->next = g_mq_message_queue;
         g_mq_message_queue->pre = msg;
@@ -29,10 +31,10 @@ void insertMessage(MessagePtr msg) {
 void destroyMessage(MessagePtr msg, int detach_queue) {
     mq_debug("destroyMessage: desc %s, tid %d, detach_queue %d", msg->desc, \
             msg->tid, detach_queue);
-    /* @TODO description*/
     if (msg == NULL) {
         return;
     }
+    /* detach the message from the message queue*/
     if (detach_queue == 1) {
         if (msg->tid >= 0) {
             myClearTimeout(msg->tid);
@@ -59,6 +61,9 @@ int compareMessageDescription(MessageInfo msg_desc, MessageInfo other_desc) {
     int i = 0;
     mq_debug("compareMessageDescription: msg_desc %s", msg_desc);
     mq_debug("compareMessageDescription: other_desc %s", other_desc);
+    /* message description is a character string, need to compare each 
+     * characters
+     */
     if (msg_desc != NULL) {
         if (other_desc == NULL) {
             return 0;
@@ -85,7 +90,6 @@ int matchMessageReceiver(MessagePtr msg, ReceiverPtr receiver) {
     return 1;
 }
 
-/* @TODO for vxworks*/
 void messageTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
         long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
     MessagePtr msg = (MessagePtr)arg0;

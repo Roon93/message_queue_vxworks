@@ -24,6 +24,7 @@ void initCallbackInfo() {
 void deinitCallbackInfo() {
     CallbackFreeNodePtr tmp = g_timer_callback_info->free_node_head;
     timer_debug("deinitCallbackInfo: nothing");
+    /* remove all callback free node*/
     while (g_timer_callback_info->free_node_head != NULL) {
         tmp = g_timer_callback_info->free_node_head;
         g_timer_callback_info->free_node_head = tmp->next;
@@ -38,8 +39,8 @@ TimerID addCallbackItem(TimerItemPtr timer_item, TimerID tid) {
     TimerID new_tid;
     CallbackFreeNodePtr free_node;
     timer_debug("addCallbackItem: timer_item %d, tid %d", timer_item, tid); 
-    /* timer_debug("addCallbackItem: g_timer_callback_info %d", g_timer_callback_info);*/
     timer_debug("addCallbackItem: test");
+    /* if the tid not equals -1, means we can reused the tid, allocate new else*/
     if (tid != -1) {
         timer_debug("addCallbackItem: tid not -1 %d", tid);
         if (g_timer_callback_info == NULL) {

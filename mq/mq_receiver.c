@@ -32,10 +32,10 @@ void destroyReceiver(ReceiverPtr receiver, int detach_queue) {
     mq_debug("destroyReceiver: %d", receiver);
     mq_debug("destroyReceiver: desc %s, tid %d, detach_queue %d", \
             receiver->desc, receiver->tid, detach_queue);
-    /* @TODO the description*/
     if (receiver == NULL) {
         return;
     }
+    /* check if the receiver need to detach with the receiver queue*/
     if (detach_queue == 1) {
         if (receiver->tid >= 0) {
             myClearTimeout(receiver->tid);
@@ -54,11 +54,11 @@ void destroyReceiver(ReceiverPtr receiver, int detach_queue) {
     mq_debug("destroyReceiver: g_mq_receiver_queue %d", g_mq_receiver_queue);
 }
 
-/* @TODO for vxworks*/
 void receiverTimeoutCallback(long arg0, long arg1, long arg2, long arg3, \
         long arg4, long arg5, long arg6, long arg7, long arg8, long arg9) {
     ReceiverPtr ptr = (ReceiverPtr)arg0;
     mq_debug("receiverTimeoutCallback: desc %s, tid %d", ptr->desc, ptr->tid);
+    /* if the receiver is the suspend receiver, post it's semaphore*/
     if (ptr->type == MQ_SUSPEND_RECEIVER && ptr->sem != NULL) {
         *(ptr->contentPtr) = NULL;
         postSemaphore(ptr->sem);
