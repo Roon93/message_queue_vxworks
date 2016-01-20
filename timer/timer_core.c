@@ -2,6 +2,9 @@
 
 /* Timer switcher*/
 static unsigned char g_timer_switcher = 1;
+
+MySemaphorePtr g_timer_end_sem;
+
 MySemaphorePtr g_timer_tick_sem;
 
 MySemaphorePtr g_timer_global_info_sem;
@@ -38,6 +41,7 @@ void initTimer() {
     initCallbackInfo();
     g_timer_switcher = 1;
     g_timer_tick_sem = initSemaphore();
+    g_timer_end_sem = initSemaphore();
     createTask(decreaseTimerNode, 0);
     sysClkConnect(increaseTick, 0);
     sysClkRateSet(1000 / TICK);
@@ -50,6 +54,8 @@ void deinitTimer() {
     TimerItemPtr tmp_item;
     timer_debug("deinitTimer: ");
     g_timer_switcher = 0;
+    waitSemaphore(g_timer_end_sem);
+    destroySemaphore(g_timer_end_sem);
     sysClkDisable();
     destroySemaphore(g_timer_tick_sem);
     while (g_timer_chain != NULL) {
@@ -210,12 +216,12 @@ void decreaseTimerNode(long arg0, long arg1, long arg2, long arg3, long arg4, \
         long arg5, long arg6, long arg7, long arg8, long arg9) {
     TimerNodePtr tmp_node;
     TimerItemPtr tmp_item;
-    while (g_timer_switcher) {
+    while (g_timer_switcher == 1) {
         waitSemaphore(g_timer_tick_sem);
         lockTimerGlobalInfo();
         if (g_timer_chain == NULL) {
             timer_debug("decreaseTimerNode: g_timer_chain is empty");
-            return;
+            continue;
         }
         tmp_node = g_timer_chain;
         timer_debug("decreaseTimerNode: before tick_num %d", tmp_node->tick_number);
@@ -235,4 +241,6 @@ void decreaseTimerNode(long arg0, long arg1, long arg2, long arg3, long arg4, \
         timer_debug("decreaseTimerNode: end of");
         unlockTimerGlobalInfo();
     }
+    timer_debug("decreaseTimerNode: $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+    postSemaphore(g_timer_end_sem);
 }

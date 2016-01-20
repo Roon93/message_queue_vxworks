@@ -46,20 +46,20 @@ int timerTest(int log_level_timer, int log_level_memory) {
     init_memory_manage(log_level_memory);
     myTimerInit(log_level_timer);
     /* test_sleep(2000);*/
-    for (i = 0; i < 30; i ++) {
+    for (i = 0; i < 20; i ++) {
         tmp_id = test_timeout(1000);
-        if (i > 20) {
+        if (i > 10) {
             test_clear_timeout(tmp_id);
         }
     }
-    for (i = 0; i < 40; i ++) {
+    for (i = 0; i < 20; i ++) {
         id[i] = test_interval(500);
-        if (i > 20) {
+        if (i > 10) {
             test_clear_interval(id[i]);
         }
     }
     mySleep(3000);
-    for (i = 0; i <= 20; i ++) {
+    for (i = 0; i <= 10; i ++) {
         test_clear_interval(id[i]);
     }
     mySleep(4000);

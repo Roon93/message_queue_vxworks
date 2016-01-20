@@ -9,5 +9,3 @@ typedef void (*TaskCallback) (long, long, long, long, long, long, long, long, \
 
 int createTask(TaskCallback callback, void* args);
 
-void joinTask(TaskID task_id);
-

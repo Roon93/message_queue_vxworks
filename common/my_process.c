@@ -10,9 +10,3 @@ int createTask(TaskCallback callback, void* args) {
     return taskSpawn(NULL, PRIORITY, OPTIONS, STACK_SIZE, callback, (long)args,\
             0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
-
-/* @TODO need to replace it with the vxworks join*/
-void joinTask(TaskID task_id) {
-    common_debug("joinTask: before join");
-    common_debug("joinTask: after join");
-}

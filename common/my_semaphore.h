@@ -1,10 +1,10 @@
 #include "semLib.h"
 #include "common_log.h"
 
-/* @TODO need according to sys sem*/
+/* the vxworks semaphore type*/
 typedef SEM_ID MySemaphorePtr;
-/* typedef SEM_ID MySemaphore;*/
 
+/* init a semaphore*/
 MySemaphorePtr initSemaphore();
 
 void waitSemaphore(MySemaphorePtr sem);
