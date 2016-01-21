@@ -79,14 +79,14 @@ void showStatus() {
     int i = 0;
     lockMemoryGlobalInfo();
     printf("<------------------------------------------------------------>\n");
-    printf("Total chunks: %d\n", g_memory_info->chunk_total);
-    printf("Total blocks: %d\n", g_memory_info->total_blocks);
+    printf("Total chunks: %d\t", g_memory_info->chunk_total);
+    printf("Total blocks: %d\t", g_memory_info->total_blocks);
     printf("Total free blocks: %d\n\n", g_memory_info->free_block_total);
 
     for (i = 0; i < CATEGORY_NUM; i ++) {
-        printf("Type: %s\n", memo_category_str[i]);
-        printf("chunk num: %d\n", g_memory_info->chunk_category[i]);
-        printf("free blocks num: %d\n", g_memory_info->free_block_num[i]);
+        printf("Type: %s\t", memo_category_str[i]);
+        printf("chunk num: %d\t", g_memory_info->chunk_category[i]);
+        printf("free blocks num: %d\t", g_memory_info->free_block_num[i]);
         printf("total blocks num: %d\n", g_memory_info->total_category_blocks[i]);
     }
     printf("^____________________________________________________________>\n\n");

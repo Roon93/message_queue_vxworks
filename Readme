@@ -1,0 +1,64 @@
+文件结构与测试说明：
+├── common               // common模块
+│   ├── common.h         // common模块头件
+│   ├── common_log.c     // common日志输出专用
+│   ├── common_log.h
+│   ├── my_process.c     // 封装的vxworks task创建支撑库
+│   ├── my_process.h
+│   ├── my_semaphore.c   // 封装的vxworks信号量创建支撑库
+│   └── my_semaphore.h
+├── memory               // 内存管理模块
+│   ├── bst.c            // 二叉搜索树相关操作
+│   ├── bst.h
+│   ├── memory.c         // 主要操作，本模块内部使用
+│   ├── memory.h
+│   ├── memory_basic.h   // 基础数据结构定义
+│   ├── memory_log.c     // 日志专输出专用
+│   ├── memory_log.h
+│   ├── memory_manage.c  // 对外函数
+│   ├── memory_manage.h  // api汇集
+│   ├── memory_test.c    // 模块测试
+│   └── memory_test.h
+├── mq                   // 消息队列模块
+│   ├── message_queue.c  // 对外函数
+│   ├── message_queue.h  // api汇集
+│   ├── mq_basic.h       // 基础数据结构定义
+│   ├── mq_lock.c        // 相关锁实现
+│   ├── mq_lock.h
+│   ├── mq_log.c         // 日志输出专用
+│   ├── mq_log.h
+│   ├── mq_message.c     // 消息处理相关操作
+│   ├── mq_message.h
+│   ├── mq_queue.c       // 队列处理相关操作
+│   ├── mq_queue.h
+│   ├── mq_receiver.c    // 接收者处理相关操作
+│   ├── mq_receiver.h
+│   ├── mq_test.c        // 模块测试
+│   └── mq_test.h
+├── timer                // 定时器模块
+│   ├── timer.c          // 对外函数
+│   ├── timer.h          // api汇集
+│   ├── timer_basic.h    // 基础数据结构定义
+│   ├── timer_callback.c // 定时器回调类型管理相关
+│   ├── timer_callback.h
+│   ├── timer_core.c     // 定时器相关核心操作
+│   ├── timer_core.h
+│   ├── timer_log.c      // 日志输出专用
+│   ├── timer_log.h
+│   ├── timer_test.c     // 模块测试
+│   └── timer_test.h
+
+memory测试：
+    调用memoryTest(level)，level为日志输出级别
+timer测试:
+    调用timerTest(level_timer, level_memory)，level_timer为timer日志输出级别,
+    level_memory为内存管理日志输出级别。
+mq测试:
+    调用mqTest(level_mq, level_timer, level_memory), 基中level_mq为消息队列日志
+    输出级别，level_timer为定时器日志输出级别，level_memory内存管理日志输出级别
+
+注：日志级别
+0: 无日志输出
+1: loginfo级别
+2: warning级别
+3: debug级别
