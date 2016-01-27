@@ -15,15 +15,16 @@ typedef void* addr_type;
 /* the memory type, and the correspond block size equals "2^val(category)"*/
 typedef enum {
     NIL = -1,
-    S1, S2, S4,
-    S8, S16, S32, S64,
-    S128, S256, S512,
-    S1024, S2048
+    CATE1, CATE2, CATE4,
+    CATE8, CATE16, CATE32, CATE64,
+    CATE128, CATE256, CATE512,
+    CATE1024, CATE2048
 } memo_category;
 
 /* the name correponding to the memo_category*/
-static char* memo_category_str[] = {"S1", "S2", "S4", "S8", "S16", "S32", \
-    "S64", "S128", "S256", "S512", "S1024", "S2048"};
+static char* memo_category_str[] = {"CATE1", "CATE2", "CATE4", "CATE8", \
+    "CATE16", "CATE32", "CATE64", "CATE128", "CATE256", "CATE512", "CATE1024", \
+        "CATE2048"};
 
 /* the balance search tree node*/
 typedef struct bst_node {

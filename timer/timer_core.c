@@ -30,7 +30,7 @@ void increaseTick(long arg) {
     static int count = 0;
     /* timer_debug("startTimer: start to forwarding the timer cout: %d", count); */
     count ++;
-    if (count == 3) {
+    if (count == 1) {
         postSemaphore(g_timer_tick_sem);
         count = 0;
     }
@@ -221,6 +221,7 @@ void decreaseTimerNode(long arg0, long arg1, long arg2, long arg3, long arg4, \
         lockTimerGlobalInfo();
         if (g_timer_chain == NULL) {
             timer_debug("decreaseTimerNode: g_timer_chain is empty");
+            unlockTimerGlobalInfo();
             continue;
         }
         tmp_node = g_timer_chain;

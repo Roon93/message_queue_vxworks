@@ -1,142 +1,139 @@
 #include "mq_test.h"
 
-void test_add_normal_message(char* desc, char* data, int length) {
-    printf("----------------------normal message---------------------------\n");
-    printf("test add normal message: desc %s, data %s, length %d\n", desc, \
-            data, length);
-    MQAddNormalMessage(NULL, desc, data, length);
-    printf("test add normal message success\n");
-    printf("---------------------------------------------------------------\n");
-}
-
-void test_add_timeout_message(char* desc, char* data, int length, int ms) {
-    printf("-------------------------timeout messag------------------------\n");
-    printf("test add timeout message: desc %s, data %s, length %d, ms %d\n", \
-            desc, data, length, ms);
-    MQAddTimeoutMessage(NULL, desc, data, length, ms);
-    printf("---------------------------------------------------------------\n");
-}
-
-void test_add_imm_receiver(char* desc) {
-    ContentPtrPtr contentPtr;
-    printf("--------------------------im receiver--------------------------\n");
-    printf("test add immediately receiver: desc %s\n", desc);
-    contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
-    *contentPtr = NULL;
-    MQAddImmediatelyReceiver(NULL, desc, contentPtr);
-    printf("test add immediately receiver success\n");
-    if ((*contentPtr) != NULL) {
-        printf("the data %s, length %d\n", (*contentPtr)->data, \
-                (*contentPtr)->length);
+char* mq_test_make_data(char* tmp, int count) {
+    char * buffer = (void*)my_malloc(13);
+    int i = 0;
+    for (i = 0; i < 12; i ++) {
+        buffer[i] = tmp[i];
     }
-    printf("---------------------------------------------------------------\n");
+    buffer[11] = count + 'a';
+    buffer[12] = 0;
+    return buffer;
 }
 
-void test_add_suspend_receiver(char* desc, MSecond ms) {
+void mq_test_case_1() {
+    int count = 0;
+    char* data;
     ContentPtrPtr contentPtr;
-    printf("---------------------------suspend receiver--------------------\n");
-    printf("test add suspend receiver: desc %s, ms %lld\n", desc, ms);
-    contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
-    *contentPtr = NULL;
-    printf("Suspend before back\n");
-    MQAddSuspendReceiver(NULL, desc, ms, contentPtr);
-    printf("Suspend after back\n");
-    printf("test add suspend receiver success\n");
-    if (*contentPtr != NULL) {
-        printf("the data %s, length %d\n", (*contentPtr)->data, \
-                (*contentPtr)->length);
-    }
-    printf("---------------------------------------------------------------\n");
-}
-
-void test_add_callback_receiver(char* desc, MSecond ms, TaskCallback callback) {
-    printf("---------------------------callback receiver--------------------\n");
-    printf("test add callback receiver: desc %s, ms %lld, callback %d\n", desc,\
-            ms, callback);
-    printf("Callback before back\n");
-    MQAddCallbackReceiver(NULL, desc, ms, callback);
-    printf("Callback after back\n");
-    printf("test add callback receiver success\n");
-    printf("---------------------------------------------------------------\n");
-}
-
-void* showMessage(void* args) {
+    
+    printf("*********10 normal message and 12 immediately receiver**********\n");
+    printf(">>>befor add normal message\n");
     showMessageQueue();
-    return NULL;
-}
-
-void* showReveiver(void* args) {
     showReceiverQueue();
-    return NULL;
+    
+    for (count = 0; count < 10; count ++) {
+        data = mq_test_make_data("case_1_msg-a", count);
+        MQAddNormalMessage(NULL, "mq_test_case_1", data, 12);
+    }
+    printf(">>>after add normal message\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    for (count = 0; count < 12; count ++) {
+        contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
+        *contentPtr = NULL;
+        MQAddImmediatelyReceiver(NULL, "mq_test_case_1", contentPtr);
+        if (*contentPtr != NULL) {
+            printf("the data %s, length %d\n", (*contentPtr)->data, \
+                    (*contentPtr)->length);
+        }
+    }
+
+    printf(">>>after add 12 immediately receiver\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    printf("***************************************************************\n\n");
 }
 
-void test_callback(long arg0, long arg1, long arg2, long arg3, long arg4, \
+void mq_test_timeout_callback(long arg0, long arg1, long arg2, long arg3, long arg4, \
         long arg5, long arg6, long arg7, long arg8, long arg9) {
+    static int count = 0;
     ContentPtr content;
-    printf("########abc %d\n", arg0);
     if (arg0 != 0) {
-        printf("args: %d\n", arg0);
         content = (ContentPtr)arg0;
-        printf("the data %s, length %d\n", content->data, content->length);
+        printf("I am the %d callback recever, my msg is: ", count);
+        printf("data %s, length %d\n", content->data, content->length);
     }
-    printf("#######I am the callbakc fuction######\n");
-    return NULL;
 }
+
+void mq_test_case_2() {
+    int count = 0;
+    char* data;
+    ContentPtrPtr contentPtr;
+    
+    printf("*********10 timeout message and 8 callback receiver*********\n");
+    printf(">>>befor add timeout message\n");
+    showMessageQueue();
+    showReceiverQueue();
+    
+    for (count = 0; count < 10; count ++) {
+        data = mq_test_make_data("case_2_msg-a", count);
+        MQAddNormalMessage(NULL, "mq_test_case_2", data, 12);
+    }
+    printf(">>>after add timeout message\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    for (count = 0; count < 8; count ++) {
+        contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
+        *contentPtr = NULL;
+        MQAddCallbackReceiver(NULL, "mq_test_case_2", 3000, \
+                mq_test_timeout_callback);
+    }
+
+    printf(">>>after add 8 callback receiver\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    mySleep(10000);
+    printf("***************************************************************\n\n");
+}
+
+void mq_test_case_3() {
+    int count = 0;
+    char* data = mq_test_make_data("case_3_msg-a", 0);
+    ContentPtrPtr contentPtr;
+    
+    printf("*********1 normal message and 2 immediately receiver**********\n");
+    printf(">>>befor add normal message\n");
+    showMessageQueue();
+    showReceiverQueue();
+    
+    MQAddNormalMessage(NULL, "mq_test_case_3", data, 12);
+
+    printf(">>>after add normal message\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    for (count = 0; count < 2; count ++) {
+        contentPtr = (ContentPtrPtr)my_malloc(sizeof(ContentPtr));
+        *contentPtr = NULL;
+        MQAddSuspendReceiver(NULL, "mq_test_case_3", 3000, contentPtr);
+        if (*contentPtr != NULL) {
+            printf("the data %s, length %d\n", (*contentPtr)->data, \
+                    (*contentPtr)->length);
+        }
+    }
+
+    printf(">>>after add 2 suspend receiver\n");
+    showMessageQueue();
+    showReceiverQueue();
+
+    mySleep(5000);
+    printf("***************************************************************\n\n");
+}
+
 
 int mqTest(int log_level_mq, int log_level_timer, int log_level_memory) {
-    int showMessageTid;
-    int showReveiverTid;
-    int i;
-    printf("---------------------------Test--------------------------------\n");
-    printf("Begin MQ TEST, LOG LEVLEL %d, %d, %d\n", log_level_mq, \
-            log_level_timer, log_level_memory);
     init_memory_manage(log_level_memory);
     myTimerInit(log_level_timer);
     initMQ(log_level_mq);
 
-    showMessageTid = mySetInterval(1000, showMessage, NULL);
-    showReveiverTid = mySetInterval(1000, showReveiver, NULL);
+    mq_test_case_1();
+    mq_test_case_2();
+    mq_test_case_3();
 
-    test_add_normal_message("aaa", "abcd", 5);
-    test_add_normal_message("aaa", "abcd", 5);
-    test_add_normal_message("aaa", "abcd", 5);
-    test_add_imm_receiver("aaa");
-    test_add_imm_receiver("aaa");
-    test_add_imm_receiver("aaa");
-
-    test_add_timeout_message("bbb", "bbbbb", 6, 3000);
-    test_add_timeout_message("bbb", "bbbbb", 6, 3000);
-    for (i = 0; i < 20; i ++) {
-        test_add_timeout_message("bbb", "bbbbb", 6, 3000);
-        mySleep(100);
-    }
-    mySleep(100);
-    test_add_imm_receiver("bbb");
-    test_add_suspend_receiver("ccc", 3000);
-    mySleep(100);
-    test_add_normal_message("ccc", "ccccc", 6);
-    test_add_normal_message("ccc", "ccccc", 6);
-    printf("&&&&&&&&&&&&&&&&&&&&&&&\n");
-
-    test_add_callback_receiver("ddd", 4000, test_callback);
-    mySleep(200);
-    test_add_normal_message("ddd", "ddddd", 6);
-    test_add_normal_message("ddd", "ddddd", 6);
-    mySleep(200);
-
-    test_add_callback_receiver("ddd", 4000, test_callback);
-    mySleep(100);
-    test_add_callback_receiver("ddd", 4000, test_callback);
-    mySleep(100);
-    test_add_callback_receiver("ddd", 4000, test_callback);
-    mySleep(100);
-    test_add_callback_receiver("ddd", 4000, test_callback);
-    mySleep(200);
-    test_add_callback_receiver("ddd", 4000, test_callback);
-
-    mySleep(1000);
-    myClearInterval(showMessageTid);
-    myClearInterval(showReveiverTid);
     deinitMQ();
     myTimerDeinit();
     deinit_memory_manage();

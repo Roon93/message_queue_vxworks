@@ -22,7 +22,7 @@ void destroyMemoryGlobalInfoLock() {
 int getBlockSizeFromCategory(memo_category category) {
     int size = 1;
     while (category > 0) {
-        size <<= 2;
+        size <<= 1;
         category --;
     }
     memory_debug("getBlockSizeFromCategory: category %d, size %d", category, size);
@@ -118,6 +118,7 @@ void* getMemory(memory_info_ptr info, int size) {
 
     lockMemoryGlobalInfo();
     if (size <= 0) {
+        memory_error("getMemory: error size %d", size);
         unlockMemoryGlobalInfo();
         return NULL;
     }

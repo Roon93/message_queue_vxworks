@@ -5,11 +5,12 @@ ReceiverPtr g_mq_receiver_queue = NULL;
 
 void showMessageQueue() {
     MessagePtr msg;
+    int i = 0;
     lockMqGlobalInfo();
     msg = g_mq_message_queue;
-    printf("the current Message queue\n");
+    printf("Current Message Queue\n");
     while (msg != NULL) {
-        printf("----%s----\n", msg->desc);
+        printf("%d: %s\n", i++, msg->desc);
         msg = msg->next;
     }
     unlockMqGlobalInfo();
@@ -17,11 +18,12 @@ void showMessageQueue() {
 
 void showReceiverQueue() {
     ReceiverPtr ptr;
+    int i = 0;
     lockMqGlobalInfo();
     ptr = g_mq_receiver_queue;
-    printf("the current Receiver queue\n");
+    printf("Current Receiver Queue\n");
     while (ptr != NULL) {
-        printf("****%s****\n", ptr->desc);
+        printf("%d: %s\n", i, ptr->desc);
         ptr = ptr->next;
     }
     unlockMqGlobalInfo();
